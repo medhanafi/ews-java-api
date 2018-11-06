@@ -96,19 +96,10 @@ public class EwsXmlReader {
    * @throws Exception on error
    */
   protected XMLEventReader initializeXmlReader(InputStream stream) throws Exception {
-//    XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-//    inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-//
-//    return inputFactory.createXMLEventReader(stream);
-      
-      
-      //XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-      //inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD,false);
-  
-      Class c = Class.forName("com.sun.xml.internal.stream.XMLInputFactoryImpl");
-      Object o = c.newInstance();
-       XMLInputFactory inputFactory = (XMLInputFactory) o;
-      return inputFactory.createXMLEventReader(stream);   
+    XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+    inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+
+    return inputFactory.createXMLEventReader(stream);
   }
 
 

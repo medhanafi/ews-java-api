@@ -45,6 +45,8 @@ import microsoft.exchange.webservices.data.core.exception.service.local.ServiceX
 import microsoft.exchange.webservices.data.core.exception.service.local.ServiceXmlSerializationException;
 import microsoft.exchange.webservices.data.misc.SoapFaultDetails;
 import microsoft.exchange.webservices.data.security.XmlNodeType;
+
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -179,15 +181,16 @@ public abstract class AutodiscoverRequest {
           memoryStream.write(data);
         }
       }
-      memoryStream.flush();
-      serviceResponseStream.close();
+    //  memoryStream.flush();
+    //  serviceResponseStream.close();
 
       if (this.service.isTraceEnabled()) {
         this.service.traceResponse(request, memoryStream);
       }
       ByteArrayInputStream memoryStreamIn = new ByteArrayInputStream(
           memoryStream.toByteArray());
-      EwsXmlReader ewsXmlReader = new EwsXmlReader(memoryStreamIn);
+      System.err.println("STREAM TEST ==========================================>\n "+IOUtils.toString(memoryStreamIn));
+      EwsXmlReader ewsXmlReader = new EwsXmlReader(request.getInputStream());
 
       // WCF may not generate an XML declaration.
       ewsXmlReader.read();
