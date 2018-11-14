@@ -31,6 +31,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -66,11 +69,15 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 
 /**
  * Represents an abstract binding to an Exchange Service.
@@ -195,14 +202,45 @@ public abstract class ExchangeServiceBase implements Closeable {
   }
 
   private void initializeHttpClient() {
-    Registry<ConnectionSocketFactory> registry = createConnectionSocketFactoryRegistry();
-    HttpClientConnectionManager httpConnectionManager = new BasicHttpClientConnectionManager(registry);
-    AuthenticationStrategy authStrategy = new CookieProcessingTargetAuthenticationStrategy();
+//    Registry<ConnectionSocketFactory> registry = createConnectionSocketFactoryRegistry();
+//    HttpClientConnectionManager httpConnectionManager = new BasicHttpClientConnectionManager(registry);
+//    AuthenticationStrategy authStrategy = new CookieProcessingTargetAuthenticationStrategy();
+	  
+	  
+	  
+	  SSLContextBuilder builder = new SSLContextBuilder();
 
-    httpClient = HttpClients.custom()
-      .setConnectionManager(httpConnectionManager)
-      .setTargetAuthenticationStrategy(authStrategy)
-      .build();
+		
+		try {
+			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
+		
+
+		SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(builder.build(),
+				NoopHostnameVerifier.INSTANCE);
+		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+				.register("http", new PlainConnectionSocketFactory()).register("https", sslConnectionSocketFactory)
+				.build();
+
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
+		cm.setMaxTotal(100);
+
+		 httpClient = HttpClients.custom().setConnectionManager(cm)
+				.build();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (KeyManagementException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+//    httpClient = HttpClients.custom()
+//      .setConnectionManager(httpConnectionManager)
+//      .setTargetAuthenticationStrategy(authStrategy)
+//      .build();
   }
 
   private void initializeHttpPoolingClient() {
